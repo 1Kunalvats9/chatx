@@ -2,7 +2,7 @@ import express from 'express';
 import { ENV } from './config/env.js';
 import cors from 'cors'
 import { connectDB } from './config/db.js'
-import {clerkMiddleware} from '@clerk/express'
+import { clerkMiddleware } from '@clerk/express'
 import userRoutes from './routes/user.route.js'
 import postRoutes from './routes/post.route.js'
 import commentRoutes from './routes/comment.route.js'
@@ -22,16 +22,17 @@ app.get("/", (req, res) => {
 })
 // error handling middleware
 app.use((err, req, res, next) => {
-  console.error("Unhandled error:", err);
-  res.status(500).json({ error: err.message || "Internal server error" });
+    console.error("Unhandled error:", err);
+    res.status(500).json({ error: err.message || "Internal server error" });
 });
 
 const startServer = async () => {
     try {
         await connectDB();
-        app.listen(ENV.PORT, () => {
-            console.log(`Server is running on port ${ENV.PORT}`);
-        })
+        // listen for local development
+        if (ENV.NODE_ENV !== "production") {
+            app.listen(ENV.PORT, () => console.log("Server is up and running on PORT:", ENV.PORT));
+        }
     } catch (err) {
         console.log('error in starting server', err);
         process.exit(1)
