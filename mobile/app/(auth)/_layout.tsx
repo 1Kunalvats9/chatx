@@ -5,10 +5,10 @@ export default function AuthRoutesLayout() {
   const { isSignedIn } = useAuth()
 
   if (isSignedIn) {
-    return <Redirect href={'/'} />
+    return <Redirect href={'/(tabs)'} />
   }
 
-  return <Stack> 
+  return <Stack screenOptions={{headerShown:false}}> 
     <Stack.Screen name='index'/>
   </Stack>
 }
