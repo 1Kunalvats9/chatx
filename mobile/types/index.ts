@@ -32,7 +32,7 @@ export interface Notification {
     profilePicture?: string;
   };
   to: string;
-  type: "like" | "comment" | "follow";
+  type: "like" | "comment" | "follow" | "message";
   post?: {
     _id: string;
     content: string;

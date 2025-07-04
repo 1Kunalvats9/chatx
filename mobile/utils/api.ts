@@ -44,3 +44,12 @@ export const commentApi = {
   createComment: (api: AxiosInstance, postId: string, content: string) =>
     api.post(`/comments/post/${postId}`, { content }),
 };
+
+export const messageApi = {
+  sendMessage: (api: AxiosInstance, userId: string, content: string) =>
+    api.post(`/users/messages/${userId}`, { content }),
+  getConversation: (api: AxiosInstance, userId: string) =>
+    api.get(`/users/messages/${userId}`),
+  getConversations: (api: AxiosInstance) =>
+    api.get('/users/messages/conversations'),
+};

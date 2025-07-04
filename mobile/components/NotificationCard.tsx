@@ -18,6 +18,8 @@ const NotificationCard = ({ notification, onDelete }: NotificationCardProps) => 
         return `${name} commented on your post`;
       case "follow":
         return `${name} started following you`;
+      case "message":
+        return `${name} sent you a message`;
       default:
         return "";
     }
@@ -31,6 +33,8 @@ const NotificationCard = ({ notification, onDelete }: NotificationCardProps) => 
         return <Feather name="message-circle" size={20} color="#1DA1F2" />;
       case "follow":
         return <Feather name="user-plus" size={20} color="#17BF63" />;
+      case "message":
+        return <Feather name="mail" size={20} color="#A259FF" />;
       default:
         return <Feather name="bell" size={20} color="#657786" />;
     }
