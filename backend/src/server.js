@@ -12,8 +12,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use(clerkMiddleware())
-app.use('/api/users', userRoutes)
-app.use('/api/posts', postRoutes)
+app.use("/api/users", userRoutes)
+app.use("/api/posts", postRoutes)
 app.use("/api/comments", commentRoutes);
 app.use("/api/notifications", notificationRoutes);
 
