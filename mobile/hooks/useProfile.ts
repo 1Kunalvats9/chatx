@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { Alert } from "react-native";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApiClient, userApi } from "../utils/api";
 import { useCurrentUser } from "./useCurrentUser";
 
-export const useProfile = () => {
+export const useProfile = (username?: string) => {
   const api = useApiClient();
-
   const queryClient = useQueryClient();
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [formData, setFormData] = useState({
@@ -16,6 +15,14 @@ export const useProfile = () => {
     location: "",
   });
   const { currentUser } = useCurrentUser();
+
+  // Fetch profile data for another user if username is provided
+  const { data: profileData, refetch: refetchProfile, isLoading: isProfileLoading } = useQuery({
+    queryKey: ["profile", username],
+    queryFn: () => username ? userApi.getUserProfile(api, username).then(res => res.data.user) : Promise.resolve(currentUser),
+    enabled: !!username,
+    initialData: !username ? currentUser : undefined,
+  });
 
   const updateProfileMutation = useMutation({
     mutationFn: (profileData: any) => userApi.updateProfile(api, profileData),
@@ -53,6 +60,8 @@ export const useProfile = () => {
     saveProfile: () => updateProfileMutation.mutate(formData),
     updateFormField,
     isUpdating: updateProfileMutation.isPending,
-    refetch: () => queryClient.invalidateQueries({ queryKey: ["authUser"] }),
+    refetch: refetchProfile,
+    profileData,
+    isProfileLoading,
   };
 };

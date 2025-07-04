@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useApiClient } from "../../utils/api";
-import { messageApi } from "../../utils/api";
+import { messageApi, userApi } from "../../utils/api";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { Feather } from "@expo/vector-icons";
 import { useState } from "react";
@@ -51,6 +51,23 @@ const MessagesScreen = () => {
     queryFn: () => selectedUserId ? messageApi.getConversation(api, selectedUserId).then(res => res.data.messages) : [],
     enabled: !!selectedUserId,
   });
+
+  // Fetch users you follow
+  const { data: followingData = [] } = useQuery<User[]>({
+    queryKey: ["following"],
+    queryFn: () => userApi.getFollowing(api).then(res => res.data.users),
+  });
+
+  // Filter following users by search and not already in conversations
+  const messagedUserIds = new Set(Object.keys(conversationsData));
+  const filteredFollowing = followingData.filter(
+    (user) =>
+      user._id !== currentUser?._id &&
+      !messagedUserIds.has(user._id) &&
+      (user.username.toLowerCase().includes(searchText.toLowerCase()) ||
+        user.firstName.toLowerCase().includes(searchText.toLowerCase()) ||
+        user.lastName.toLowerCase().includes(searchText.toLowerCase()))
+  );
 
   // Send message mutation
   const sendMessageMutation = useMutation({
@@ -130,6 +147,29 @@ const MessagesScreen = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 + insets.bottom }}
       >
+        {/* Show filtered following users for new chat */}
+        {searchText.trim() && filteredFollowing.length > 0 && (
+          <View className="bg-gray-50 border-b border-gray-100">
+            <Text className="px-4 pt-4 pb-2 text-xs text-gray-500">Start a new conversation</Text>
+            {filteredFollowing.map((user) => (
+              <TouchableOpacity
+                key={user._id}
+                className="flex-row items-center p-4 border-b border-gray-50 active:bg-gray-100"
+                onPress={() => openConversation(user._id)}
+              >
+                <Image
+                  source={{ uri: user.profilePicture }}
+                  className="size-12 rounded-full mr-3"
+                />
+                <View>
+                  <Text className="font-semibold text-gray-900">{user.firstName} {user.lastName}</Text>
+                  <Text className="text-gray-500 text-sm">@{user.username}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+        {/* Existing conversations */}
         {conversationsList.map((conversation) => (
           <TouchableOpacity
             key={conversation.userId}
@@ -140,7 +180,6 @@ const MessagesScreen = () => {
               source={{ uri: conversation.user.avatar }}
               className="size-12 rounded-full mr-3"
             />
-
             <View className="flex-1">
               <View className="flex-row items-center justify-between mb-1">
                 <View className="flex-row items-center gap-1">
