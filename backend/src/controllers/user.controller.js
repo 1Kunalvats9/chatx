@@ -67,7 +67,7 @@ export const followUser = asyncHandler(async (req, res) => {
 
   if (!currentUser || !targetUser) return res.status(404).json({ error: "User not found" });
 
-  const isFollowing = currentUser.following.includes(targetUserId);
+  const isFollowing = currentUser.following.map(id => id.toString()).includes(targetUserId);
 
   if (isFollowing) {
     // unfollow

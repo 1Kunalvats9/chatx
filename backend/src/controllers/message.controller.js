@@ -17,7 +17,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
   if (!sender || !receiver) return res.status(404).json({ error: 'User not found' });
 
   // Only allow messaging if sender follows receiver
-  if (!sender.following.includes(receiverId)) {
+  if (!sender.following.map(id => id.toString()).includes(receiverId)) {
     return res.status(403).json({ error: 'You can only message users you follow' });
   }
 

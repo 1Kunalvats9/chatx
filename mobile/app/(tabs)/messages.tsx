@@ -3,7 +3,7 @@ import { useApiClient } from "../../utils/api";
 import { messageApi, userApi } from "../../utils/api";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { Feather } from "@expo/vector-icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { User } from "../../types";
+import { useRoute } from "@react-navigation/native";
 
 // Message type
 interface Message {
@@ -33,6 +34,9 @@ const MessagesScreen = () => {
   const api = useApiClient();
   const queryClient = useQueryClient();
   const { currentUser } = useCurrentUser();
+  const route = useRoute();
+  // @ts-ignore
+  const initialUserId = route.params?.userId as string | undefined;
 
   const [searchText, setSearchText] = useState("");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -116,6 +120,13 @@ const MessagesScreen = () => {
       time: new Date(lastMsg.createdAt).toLocaleTimeString(),
     };
   });
+
+  useEffect(() => {
+    if (initialUserId) {
+      setSelectedUserId(initialUserId);
+      setIsChatOpen(true);
+    }
+  }, [initialUserId]);
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>

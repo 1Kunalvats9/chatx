@@ -2,6 +2,10 @@ import { Post, User } from "@/types";
 import { formatDate, formatNumber } from "@/utils/formatters";
 import { AntDesign, Feather } from "@expo/vector-icons";
 import { View, Text, Alert, Image, TouchableOpacity } from "react-native";
+import { useMutation } from "@tanstack/react-query";
+import { useApiClient, userApi } from "../utils/api";
+import { useNavigation } from "@react-navigation/native";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface PostCardProps {
   post: Post;
@@ -10,10 +14,21 @@ interface PostCardProps {
   onComment: (post: Post) => void;
   isLiked?: boolean;
   currentUser: User;
+  onUserPress?: (user: User) => void;
 }
 
-const PostCard = ({ currentUser, onDelete, onLike, post, isLiked, onComment }: PostCardProps) => {
+const PostCard = ({ currentUser, onDelete, onLike, post, isLiked, onComment, onUserPress }: PostCardProps) => {
   const isOwnPost = post.user._id === currentUser._id;
+  const api = useApiClient();
+  const navigation = useNavigation();
+  const queryClient = useQueryClient();
+  const isFollowing = currentUser.following?.includes(post.user._id);
+  const followMutation = useMutation({
+    mutationFn: (targetUserId: string) => userApi.followUser(api, targetUserId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+    },
+  });
 
   const handleDelete = () => {
     Alert.alert("Delete Post", "Are you sure you want to delete this post?", [
@@ -29,25 +44,47 @@ const PostCard = ({ currentUser, onDelete, onLike, post, isLiked, onComment }: P
   return (
     <View className="border-b border-gray-100 bg-white">
       <View className="flex-row p-4">
-        <Image
-          source={{ uri: post.user.profilePicture || "" }}
-          className="w-12 h-12 rounded-full mr-3"
-        />
+        <TouchableOpacity onPress={() => onUserPress && onUserPress(post.user)}>
+          <Image
+            source={{ uri: post.user.profilePicture || "" }}
+            className="w-12 h-12 rounded-full mr-3"
+          />
+        </TouchableOpacity>
 
         <View className="flex-1">
           <View className="flex-row items-center justify-between mb-1">
             <View className="flex-row items-center">
-              <Text className="font-bold text-gray-900 mr-1">
-                {post.user.firstName} {post.user.lastName}
-              </Text>
+              <TouchableOpacity onPress={() => onUserPress && onUserPress(post.user)}>
+                <Text className="font-bold text-gray-900 mr-1">
+                  {post.user.firstName} {post.user.lastName}
+                </Text>
+              </TouchableOpacity>
               <Text className="text-gray-500 ml-1">
                 @{post.user.username} · {formatDate(post.createdAt)}
               </Text>
             </View>
-            {isOwnPost && (
+            {isOwnPost ? (
               <TouchableOpacity onPress={handleDelete}>
                 <Feather name="trash" size={20} color="#657786" />
               </TouchableOpacity>
+            ) : (
+              <>
+                <TouchableOpacity
+                  className={`px-3 py-1 rounded-full ml-2 ${isFollowing ? "bg-gray-200" : "bg-blue-500"}`}
+                  onPress={() => followMutation.mutate(post.user._id)}
+                  disabled={followMutation.isPending}
+                >
+                  <Text className={`text-xs font-semibold ${isFollowing ? "text-gray-900" : "text-white"}`}>
+                    {isFollowing ? "Following" : "Follow"}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className="ml-2 px-2 py-1 bg-gray-100 rounded-full"
+                  onPress={() => navigation.navigate("messages", { userId: post.user._id })}
+                >
+                  <Feather name="mail" size={18} color="#1DA1F2" />
+                </TouchableOpacity>
+              </>
             )}
           </View>
 

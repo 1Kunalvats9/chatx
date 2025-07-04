@@ -5,7 +5,7 @@ import { usePosts } from "@/hooks/usePosts";
 import { useUserSync } from "@/hooks/useUserSync";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { RefreshControl, ScrollView, Text, View } from "react-native";
+import { RefreshControl, ScrollView, Text, View, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const HomeScreen = () => {
@@ -24,7 +24,7 @@ const HomeScreen = () => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-100">
-        <Ionicons name="logo-twitter" size={24} color="#1DA1F2" />
+        <Image source={require("../../assets/images/bg.png")} style={{ width: 32, height: 32, borderRadius: 8 }} />
         <Text className="text-xl font-bold text-gray-900">Home</Text>
         <SignOutButton />
       </View>

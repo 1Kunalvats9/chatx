@@ -16,9 +16,10 @@ import {
   RefreshControl,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
 import { useMutation } from "@tanstack/react-query";
 import { useApiClient, userApi } from "../../utils/api";
+import { useQueryClient } from "@tanstack/react-query";
 
 const ProfileScreens = () => {
   const route = useRoute();
@@ -26,6 +27,8 @@ const ProfileScreens = () => {
   const username = route.params?.username as string | undefined;
   const { currentUser, isLoading } = useCurrentUser();
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
+  const queryClient = useQueryClient();
 
   const {
     posts: userPosts,
@@ -51,6 +54,7 @@ const ProfileScreens = () => {
     mutationFn: (targetUserId: string) => userApi.followUser(api, targetUserId),
     onSuccess: () => {
       refetchProfile();
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
     },
   });
 
@@ -117,15 +121,23 @@ const ProfileScreens = () => {
                 <Text className="font-semibold text-gray-900">Edit profile</Text>
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity
-                className={`px-6 py-2 rounded-full ${isFollowing ? "bg-gray-200" : "bg-blue-500"}`}
-                onPress={() => followMutation.mutate(profileData._id)}
-                disabled={followMutation.isPending}
-              >
-                <Text className={`font-semibold ${isFollowing ? "text-gray-900" : "text-white"}`}>
-                  {isFollowing ? "Following" : "Follow"}
-                </Text>
-              </TouchableOpacity>
+              <View className="flex-row items-center">
+                <TouchableOpacity
+                  className={`px-6 py-2 rounded-full mr-2 ${isFollowing ? "bg-gray-200" : "bg-blue-500"}`}
+                  onPress={() => followMutation.mutate(profileData._id)}
+                  disabled={followMutation.isPending}
+                >
+                  <Text className={`font-semibold ${isFollowing ? "text-gray-900" : "text-white"}`}>
+                    {isFollowing ? "Following" : "Follow"}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className="px-3 py-2 bg-gray-100 rounded-full"
+                  onPress={() => navigation.navigate("messages", { userId: profileData._id })}
+                >
+                  <Feather name="mail" size={20} color="#1DA1F2" />
+                </TouchableOpacity>
+              </View>
             )}
           </View>
 

@@ -5,6 +5,7 @@ import { View, Text, ActivityIndicator, TouchableOpacity } from "react-native";
 import PostCard from "./PostCard";
 import { useState } from "react";
 import CommentsModal from "./CommentsModal";
+import { useNavigation } from "@react-navigation/native";
 
 const PostsList = ({ username }: { username?: string }) => {
   // Destructure isLoading and error from both hooks, rename to avoid clashes
@@ -28,6 +29,8 @@ const PostsList = ({ username }: { username?: string }) => {
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
 
   const selectedPost = selectedPostId ? posts.find((p: Post) => p._id === selectedPostId) : null;
+
+  const navigation = useNavigation();
 
   // Combine loading states: show loading if either user or posts are loading
   if (isCurrentUserLoading || isPostsLoading) {
@@ -92,6 +95,7 @@ const PostsList = ({ username }: { username?: string }) => {
           onComment={(post: Post) => setSelectedPostId(post._id)}
           currentUser={currentUser} // This will now be a valid User object
           isLiked={checkIsLiked(post.likes, currentUser)}
+          onUserPress={(user) => navigation.navigate("profile", { username: user.username })}
         />
       ))}
 
