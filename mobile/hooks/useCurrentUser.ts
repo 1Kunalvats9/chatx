@@ -14,6 +14,7 @@ export const useCurrentUser = () => {
     queryFn: () => userApi.getCurrentUser(api),
     select: (response) => response.data.user,
   });
-
+  console.log(currentUser)
+  
   return { currentUser, isLoading, error, refetch };
 };
